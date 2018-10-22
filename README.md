@@ -19,3 +19,9 @@ Usage
 cd trello_sprint
 python3 main.py --board "DFG-Networking-vNES Squad" --sprint 0
 ```
+
+Assumptions
+===========
+* The board must contain the following columns: Backlog, Doing, and Done
+* trello-sprint will only print cards that have the appropriate sprint label: 'Sprint %s', %s filled in by the 'sprint' CLI argument
+* The boards' cards must have an 'Hours' custom attribute
