@@ -52,22 +52,13 @@ def get_list(lists, name):
             return l
 
 
-def get_label(board, name):
-    name = name.lower()
-    labels = board.get_labels()
-    for l in labels:
-        if l.name.lower() == name:
-            return l
-
-
 def get_sprint_cards(trello_list, sprint):
     cards = trello_list.list_cards()
     sprint = 'sprint %s' % sprint
 
     sprint_cards = []
     for c in cards:
-        labels = c.labels
-        for l in labels or []:
+        for l in c.labels or []:
             if l.name.lower() == sprint:
                 sprint_cards.append(c)
                 break
@@ -87,16 +78,21 @@ def report_cards(cards):
                 member.fetch()
                 member_names.append(member.full_name)
 
-        fields = c.custom_fields
-        hours = None
-        for f in fields:
-            if f.name == 'Hours':
-                hours = f.value
+        blocked_by = None
+        unplanned = False
+        for f in c.custom_fields:
+            if f.name == 'Blocked By':
+                blocked_by = f.value
+            elif f.name == 'Unplanned':
+                unplanned = f.value
+
         row = '  %s' % c.name
+        if unplanned:
+            row += ', *unplanned*'
         if member_names:
             row += ', %s' % ', '.join(member_names)
-        if hours:
-            row += ', %s hours' % hours
+        if blocked_by:
+            row += ', *blocked by %s*' % blocked_by
         print(row)
     print()
 
