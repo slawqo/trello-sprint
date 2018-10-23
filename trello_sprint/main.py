@@ -15,7 +15,7 @@ def get_client():
         sys.exit(1)
 
     if not config.has_section('trello'):
-        click.echo('Config file does not contain section [trello].')
+        print('Config file does not contain section [trello].')
         sys.exit(1)
 
     return TrelloClient(
@@ -29,7 +29,8 @@ client = get_client()
 
 
 def get_cli_options():
-    parser = argparse.ArgumentParser(description='Generate a report per (board, sprint)')
+    parser = argparse.ArgumentParser(
+        description='Generate a report per (board, sprint)')
     parser.add_argument('--board', help='board name', required=True)
     parser.add_argument('--sprint', type=int, help='integer', required=True)
 
