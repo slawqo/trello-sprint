@@ -6,6 +6,9 @@ import sys
 from trello import TrelloClient
 from trello.member import Member
 
+# Keep members information
+members = {}
+
 
 def get_client():
     config = configparser.ConfigParser()
@@ -54,6 +57,15 @@ def get_list(lists, name):
             return l
 
 
+def get_member(member_id):
+    if member_id in members:
+        return members[member_id]
+    member = Member(client, member_id)
+    member.fetch()
+    members[member_id] = member
+    return member
+
+
 def get_sprint_cards(trello_list, sprint):
     cards = trello_list.list_cards()
     sprint_label = 'sprint %s' % sprint
@@ -76,8 +88,7 @@ def report_cards(cards):
         member_names = []
         if c.member_id:
             for m_id in c.member_id:
-                member = Member(client, m_id)
-                member.fetch()
+                member = get_member(m_id)
                 member_names.append(member.full_name)
 
         blocked_by = None
