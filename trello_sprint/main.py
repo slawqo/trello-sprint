@@ -33,7 +33,7 @@ def get_cli_options():
     parser = argparse.ArgumentParser(
         description='Generate a report per (board, sprint)')
     parser.add_argument('--board', help='board name', required=True)
-    parser.add_argument('--sprint', type=int, help='integer', required=True)
+    parser.add_argument('--sprint', type=int, help='integer', required=False)
 
     args = parser.parse_args()
     return args
@@ -56,12 +56,12 @@ def get_list(lists, name):
 
 def get_sprint_cards(trello_list, sprint):
     cards = trello_list.list_cards()
-    sprint = 'sprint %s' % sprint
+    sprint_label = 'sprint %s' % sprint
 
     sprint_cards = []
     for c in cards:
         for l in c.labels or []:
-            if l.name.lower() == sprint:
+            if sprint is None or l.name.lower() == sprint_label:
                 sprint_cards.append(c)
                 break
     return sprint_cards
@@ -109,7 +109,7 @@ def main():
     lists = board.list_lists('open')
 
     report_cards(get_sprint_cards(
-        get_list(lists, 'Backlog'), cli_options.sprint))
+        get_list(lists, 'Sprint Backlog'), cli_options.sprint))
     report_cards(get_sprint_cards(
         get_list(lists, 'Doing'), cli_options.sprint))
     report_cards(get_sprint_cards(
