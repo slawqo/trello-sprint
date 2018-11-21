@@ -72,10 +72,13 @@ def get_sprint_cards(trello_list, sprint):
 
     sprint_cards = []
     for c in cards:
-        for l in c.labels or []:
-            if sprint is None or l.name.lower() == sprint_label:
-                sprint_cards.append(c)
-                break
+        if sprint is None:
+            sprint_cards.append(c)
+        else:
+            for l in c.labels or []:
+                if l.name.lower() == sprint_label:
+                    sprint_cards.append(c)
+                    break
     return sprint_cards
 
 
