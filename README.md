@@ -17,7 +17,7 @@ Usage
 =====
 ```
 cd trello_sprint
-python3 main.py --board "DFG-Networking-vNES Squad" --sprint 0
+python3 main.py --config auth.conf "DFG-Networking-vNES Squad"
 ```
 
 Assumptions
