@@ -22,6 +22,6 @@ python3 main.py --config auth.conf "DFG-Networking-vNES Squad"
 
 Assumptions
 ===========
-* The board must contain the following columns: Backlog, Doing, and Done
+* The board must contain the following columns: Sprint Backlog, Doing, In Review, and Done
 * trello-sprint will only print cards that have the appropriate sprint label: 'Sprint %s', %s filled in by the 'sprint' CLI argument
 * The boards' cards must have an 'Hours' custom attribute

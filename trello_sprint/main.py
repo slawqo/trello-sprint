@@ -138,6 +138,7 @@ def print_card(card, print_unplanned=False):
 def print_report(lists):
     sprint_backlog_cards = parse_cards_from_list(lists, 'Sprint Backlog')
     doing_cards = parse_cards_from_list(lists, 'Doing')
+    in_review_cards = parse_cards_from_list(lists, 'In Review')
     done_cards = parse_cards_from_list(lists, 'Done')
 
     units_planned_done = len(done_cards['planned'])
@@ -145,9 +146,11 @@ def print_report(lists):
 
     units_planned = (len(sprint_backlog_cards['planned']) +
                      len(doing_cards['planned']) +
+                     len(in_review_cards['planned']) +
                      units_planned_done)
     units_unplanned = (len(sprint_backlog_cards['unplanned']) +
                        len(doing_cards['unplanned']) +
+                       len(in_review_cards['unplanned']) +
                        units_unplanned_done)
 
     print('Units of work planned:', units_planned)
@@ -171,7 +174,9 @@ def print_report(lists):
     for c in (sprint_backlog_cards['planned'] +
               sprint_backlog_cards['unplanned'] +
               doing_cards['planned'] +
-              doing_cards['unplanned']):
+              doing_cards['unplanned'] +
+              in_review_cards['planned'] +
+              in_review_cards['unplanned']):
         print_card(c, print_unplanned=True)
 
 
