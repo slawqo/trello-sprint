@@ -144,13 +144,16 @@ def print_report(lists):
     units_planned_done = len(done_cards['planned'])
     units_unplanned_done = len(done_cards['unplanned'])
 
+    units_planned_review = len(in_review_cards['planned'])
+    units_unplanned_review = len(in_review_cards['unplanned'])
+
     units_planned = (len(sprint_backlog_cards['planned']) +
                      len(doing_cards['planned']) +
-                     len(in_review_cards['planned']) +
+                     units_planned_review +
                      units_planned_done)
     units_unplanned = (len(sprint_backlog_cards['unplanned']) +
                        len(doing_cards['unplanned']) +
-                       len(in_review_cards['unplanned']) +
+                       units_unplanned_review +
                        units_unplanned_done)
 
     print('Units of work planned:', units_planned)
@@ -161,6 +164,12 @@ def print_report(lists):
     print('Units of unplanned work achieved: %d (%.1f%%)' % (
         units_unplanned_done,
         percentage(units_unplanned_done, units_unplanned)))
+    print('Units of planned work in review: %d (%.1f%%)' % (
+        units_planned_review,
+        percentage(units_planned_review, units_planned)))
+    print('Units of unplanned work in review: %d (%.1f%%)' % (
+        units_unplanned_review,
+        percentage(units_unplanned_review, units_unplanned)))
 
     print('Achievement Headline: ')
     for c in done_cards['planned']:
