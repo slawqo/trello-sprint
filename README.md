@@ -15,10 +15,19 @@ Edit trello_sprint/auth.conf with your Trello api_key, api_secret and token. The
 
 Usage
 =====
+
+For generating a report:
+
 ```
-cd trello_sprint
-python3 main.py --config auth.conf "DFG-Networking-vNES Squad"
+python3 trello_sprint/main.py --config auth.conf "DFG-Networking-vNES Squad" report
 ```
+
+For setting the PM_SCORE field for the cards in the Backlog:
+
+```
+python3 trello_sprint/main.py --config auth.conf "DFG-Networking-vNES Squad" pm-score
+```
+
 
 Assumptions
 ===========
