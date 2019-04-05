@@ -2,7 +2,9 @@
 import argparse
 import configparser
 import sys
+from urllib.parse import urlparse, parse_qs
 
+import bugzilla
 from trello import TrelloClient
 from trello.member import Member
 
@@ -11,8 +13,10 @@ CLIENT = None
 MEMBERS_CACHE = {}
 LABEL_UNPLANNED = 'UNPLANNED'
 FIELD_BUGZILLA = 'BUGZILLA'
+FIELD_PM_SCORE = 'PM_SCORE'
 
 _INCLUDE_MEMBERS = False
+_BUGZILLA_URL = 'https://bugzilla.redhat.com'
 
 
 class ListNotFound(Exception):
@@ -41,26 +45,34 @@ def get_client(config_path):
     return CLIENT
 
 
-def get_cli_options():
+def _report_defaults(args):
     global _INCLUDE_MEMBERS
+    _INCLUDE_MEMBERS = args.include_members
 
+
+def get_cli_options():
     parser = argparse.ArgumentParser(
         description='Generate a report per (board, sprint)')
     parser.add_argument('board', help='Trello board name')
     parser.add_argument('--config', help='TODO', required=True)
-    parser.add_argument('--include-members', action='store_true',
-                        help='If set, include members to the report',
-                        default=False)
+    subparsers = parser.add_subparsers(title='commands',
+                                       description='Valid commands',
+                                       dest='command',
+                                       help='additional help')
+    sp_report = subparsers.add_parser('report')
+    sp_report.add_argument('--include-members', action='store_true',
+                           help='If set, include members to the report',
+                           default=False)
+    sp_report.set_defaults(func=_report_defaults)
 
+    pm_score = subparsers.add_parser('pm-score')
+    pm_score.set_defaults(func=lambda args: None)
     # TODO(lucasagomes): Create an option to fetch information from
     # Bugzilla when the link is available in the card. For example, to
     # determine whether it's a blocker or not (avoiding duplication to
     # have the information in both places, trello and bugzilla)
-
     args = parser.parse_args()
-
-    _INCLUDE_MEMBERS = args.include_members
-
+    args.func(args)
     return args
 
 
@@ -107,6 +119,7 @@ def parse_cards_from_list(lists, list_name):
     tlist = get_list(lists, list_name)
     for c in tlist.list_cards():
         card = {}
+        card['_object'] = c
         card['members'] = list_members_from_card(c)
         card['unplanned'] = is_card_unplanned(c)
         for cf in c.custom_fields:
@@ -180,8 +193,29 @@ def print_report(lists):
         print_card(c, print_unplanned=True)
 
 
+def set_pm_score(lists):
+    backlog_cards = parse_cards_from_list(lists, 'Backlog')
+    bzapi = bugzilla.Bugzilla(_BUGZILLA_URL)
+    if not bzapi.logged_in:
+        bzapi.interactive_login()
+
+    for card in backlog_cards['planned'] + backlog_cards['unplanned']:
+        bz_url = card.get('bugzilla')
+        if bz_url is None:
+            continue
+        bug = bzapi.getbug(parse_qs(urlparse(bz_url).query)['id'][0])
+        print('Setting PM_SCORE for "%s" to %s' % (card['name'],
+                                                   bug.cf_pm_score))
+        cf = card['_object'].get_custom_field_by_name(FIELD_PM_SCORE)
+        cf.value = int(bug.cf_pm_score)
+
+
 def main():
     cli_options = get_cli_options()
+    if cli_options.command is None:
+        print('Please select a command. --help for more information')
+        sys.exit(1)
+
     get_client(cli_options.config)
     board = get_board(cli_options.board)
     if not board:
@@ -189,7 +223,13 @@ def main():
         return
 
     lists = board.list_lists('open')
-    print_report(lists)
+    if cli_options.command == 'report':
+        print_report(lists)
+    elif cli_options.command == 'pm-score':
+        set_pm_score(lists)
+    else:
+        print('Command "%s" is not a valid command' % cli_options.command)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
