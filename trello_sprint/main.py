@@ -203,7 +203,12 @@ def print_report(lists):
 
 
 def set_pm_score(lists):
-    backlog_cards = parse_cards_from_list(lists, 'Backlog')
+    columns = ['Backlog', 'Sprint backlog', 'Doing', 'In Review', 'Done']
+    for column in columns:
+        _set_pm_score_for_column(lists, column)
+
+def _set_pm_score_for_column(lists, column_name):
+    backlog_cards = parse_cards_from_list(lists, column_name)
     bzapi = bugzilla.Bugzilla(_BUGZILLA_URL)
     if not bzapi.logged_in:
         bzapi.interactive_login()
@@ -212,7 +217,15 @@ def set_pm_score(lists):
         bz_url = card.get('bugzilla')
         if bz_url is None:
             continue
-        bug = bzapi.getbug(parse_qs(urlparse(bz_url).query)['id'][0])
+        # TODO(slaweq): make it working also for BZ links in format like
+        # https://bugzilla.redhat.com/1641421
+        bz_id = parse_qs(urlparse(bz_url).query).get('id')
+        if bz_id is None:
+            print('Bugzilla URL %s can not be parsed. Please check it' %
+                  bz_url)
+            continue
+        bug_id = bz_id[0]
+        bug = bzapi.getbug(bug_id)
         print('Setting PM_SCORE for "%s" to %s' % (card['name'],
                                                    bug.cf_pm_score))
         cf = card['_object'].get_custom_field_by_name(FIELD_PM_SCORE)
